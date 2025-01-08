@@ -48,7 +48,11 @@ start() {
       dlv --listen=:"${DELVE_PORT}" --headless=true --api-version=2 --accept-multiclient exec /"${SERVICE_NAME}" -- ${SERVICE_ARGS} &
       dlv_pid=$!
       echo -e "\033[34m[INFO]Debugger started successfully, its pid is $dlv_pid"
-      wait
+      wait $dlv_pid
+      if [ $? -ne 0 ]; then
+        echo -e "\033[31m[ERROR]Delve process terminated abnormally"
+        exit 1
+      fi
     done
   )&
   loop_pid=$!
