@@ -9,6 +9,7 @@ if [ -z "$SRC_DIR" ]; then
 else
   cd "$SRC_DIR" || { echo "Failed to cd ${SRC_DIR}"; exit 1; }
   SERVICE_NAME=$(basename "$SRC_DIR")
+  echo "SERVICE_NAME: ${SERVICE_NAME}"
 fi
 
 echo "SRC_DIR environment is set to: $SRC_DIR"
