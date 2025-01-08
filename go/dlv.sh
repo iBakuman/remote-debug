@@ -32,6 +32,7 @@ build() {
     echo -e "\033[31m[ERROR]Build failed"
     return 1
   fi
+  chmod +x /${SERVICE_NAME}
 }
 
 start() {
