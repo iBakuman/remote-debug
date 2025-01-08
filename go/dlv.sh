@@ -13,13 +13,15 @@ SRC_DIR=${SRC_DIR%/}
 
 if [ -z "$MAIN_FILE_PATH" ]; then
   echo "Error: MAIN_FILE_PATH environment variable is not set."
-  cd "$SRC_DIR" || { echo "Failed to cd ${SRC_DIR}"; exit 1; }
+  exit 1
 fi
 
 if [[ "$MAIN_FILE_PATH" == /* ]]; then
   echo "Error: MAIN_FILE_PATH must be a relative path, cannot start with '/'"
   exit 1
 fi
+
+cd "$SRC_DIR" || { echo "Failed to cd ${SRC_DIR}"; exit 1; }
 
 echo "SRC_DIR environment is set to: $SRC_DIR"
 
@@ -37,7 +39,7 @@ build() {
   log "Building executable binary"
   go env -w GOPROXY="proxy.golang.org,direct"
   go mod download
-  if ! go build -buildvcs=false -gcflags "all=-N -l" -o /app "${SRC_DIR}/${MAIN_FILE_PATH}";then
+  if ! go build -buildvcs=false -gcflags "all=-N -l" -o /app "./${MAIN_FILE_PATH}";then
     echo -e "\033[31m[ERROR]Build failed"
     return 1
   fi
