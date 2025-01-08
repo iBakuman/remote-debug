@@ -1,15 +1,24 @@
 #!/usr/bin/env bash
 
 FILE_CHANGE_LOG_FILE=/tmp/changes.log
-SERVICE_ARGS="$@"
+APP_ARGS="$@"
 
 if [ -z "$SRC_DIR" ]; then
   echo "Error: SRC_DIR environment variable is not set."
   exit 1
-else
+fi
+
+# Remove trailing slash from SRC_DIR if it exists
+SRC_DIR=${SRC_DIR%/}
+
+if [ -z "$MAIN_FILE_PATH" ]; then
+  echo "Error: MAIN_FILE_PATH environment variable is not set."
   cd "$SRC_DIR" || { echo "Failed to cd ${SRC_DIR}"; exit 1; }
-  SERVICE_NAME=$(basename "$SRC_DIR")
-  echo "SERVICE_NAME: ${SERVICE_NAME}"
+fi
+
+if [[ "$MAIN_FILE_PATH" == /* ]]; then
+  echo "Error: MAIN_FILE_PATH must be a relative path, cannot start with '/'"
+  exit 1
 fi
 
 echo "SRC_DIR environment is set to: $SRC_DIR"
@@ -25,14 +34,13 @@ init() {
 }
 
 build() {
-  log "Building ${SERVICE_NAME} binary"
+  log "Building executable binary"
   go env -w GOPROXY="proxy.golang.org,direct"
   go mod download
-  if ! go build -buildvcs=false -gcflags "all=-N -l" -o /${SERVICE_NAME};then
+  if ! go build -buildvcs=false -gcflags "all=-N -l" -o /app "${SRC_DIR}/${MAIN_FILE_PATH}";then
     echo -e "\033[31m[ERROR]Build failed"
     return 1
   fi
-  chmod +x /${SERVICE_NAME}
 }
 
 start() {
@@ -45,11 +53,10 @@ start() {
     }
     trap kill_dlv SIGTERM
     while true; do
-      dlv --listen=:"${DELVE_PORT}" --headless=true --api-version=2 --accept-multiclient exec /"${SERVICE_NAME}" -- ${SERVICE_ARGS} &
+      dlv --listen=:"${DELVE_PORT}" --headless=true --api-version=2 --accept-multiclient exec /app -- ${APP_ARGS} &
       dlv_pid=$!
       echo -e "\033[34m[INFO]Debugger started successfully, its pid is $dlv_pid"
       wait
-      echo "SERVICE_NAME: ${SERVICE_NAME}"
     done
   )&
   loop_pid=$!
@@ -63,7 +70,7 @@ restart() {
 
   log "Killing old processes"
   kill "$loop_pid"
-  killall "${SERVICE_NAME}"
+  killall "${APP_PATH}"
 
   start
 }
