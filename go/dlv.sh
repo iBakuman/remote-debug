@@ -72,7 +72,7 @@ restart() {
 
   log "Killing old processes"
   kill "$loop_pid"
-  killall "${APP_PATH}"
+  killall"app"
 
   start
 }
