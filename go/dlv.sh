@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 FILE_CHANGE_LOG_FILE=/tmp/changes.log
 APP_ARGS="$@"
