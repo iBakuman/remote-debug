@@ -38,7 +38,7 @@ init() {
 build() {
   log "Building executable binary"
   go env -w GOPROXY="proxy.golang.org,direct"
-  go mod download
+  go mod tidy
   if ! go build -buildvcs=false -gcflags "all=-N -l" -o /app "./${MAIN_FILE_PATH}";then
     echo -e "\033[31m[ERROR]Build failed"
     return 1
@@ -66,13 +66,13 @@ start() {
 }
 
 restart() {
-  if ! build;then
-    return 1
-  fi
-
   log "Killing old processes"
   kill "$loop_pid"
   killall "app"
+
+  if ! build;then
+    return 1
+  fi
 
   start
 }
@@ -106,6 +106,7 @@ watch() {
     while true; do
       read TMP
       restart
+      
     done
   )
 }
