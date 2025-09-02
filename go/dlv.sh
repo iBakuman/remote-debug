@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 FILE_CHANGE_LOG_FILE=/tmp/changes.log
-APP_ARGS="$@"
+APP_ARGS=("$@")
 
 if [ -z "$SRC_DIR" ]; then
   echo "Error: SRC_DIR environment variable is not set."
@@ -93,7 +93,7 @@ start() {
     }
     trap kill_dlv SIGTERM
     while true; do
-      dlv --listen=:"${DELVE_PORT}" --headless=true --api-version=2 --accept-multiclient exec /app -- ${APP_ARGS} &
+      dlv --listen=:"${DELVE_PORT}" --headless=true --api-version=2 --accept-multiclient exec /app -- "${APP_ARGS[@]}" &
       dlv_pid=$!
       echo -e "\033[34m[INFO]Debugger started successfully, its pid is $dlv_pid"
       wait
